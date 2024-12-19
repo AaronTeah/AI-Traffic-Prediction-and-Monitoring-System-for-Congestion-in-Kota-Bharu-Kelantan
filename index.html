@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traffic Prediction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 {
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="number"], select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Predict Total Number of Vehicles</h1>
+        <form action="/predict" method="POST">
+            <label for="Time">Time:</label>
+            <select id="Time" name="Time">
+                {% for hour in range(0, 24) %}
+                    {% for minute in range(0, 60, 15) %}
+                        <option value="{{ '{:02d}:{:02d}:00 {}'.format(hour % 12 or 12, minute, 'AM' if hour < 12 else 'PM') }}">
+                            {{ '{:02d}:{:02d} {}'.format(hour % 12 or 12, minute, 'AM' if hour < 12 else 'PM') }}
+                        </option>
+                    {% endfor %}
+                {% endfor %}
+            </select>
+            <label for="Day of the week">Day of the week:</label>
+            <select id="Day of the week" name="Day of the week">
+                <option value="Monday">Monday</option>
+                <option value="Tuesday">Tuesday</option>
+                <option value="Wednesday">Wednesday</option>
+                <option value="Thursday">Thursday</option>
+                <option value="Friday">Friday</option>
+                <option value="Saturday">Saturday</option>
+                <option value="Sunday">Sunday</option>
+            </select>
+            <label for="CarCount">Car Count:</label>
+            <input type="number" id="CarCount" name="CarCount">
+            <label for="BikeCount">Bike Count:</label>
+            <input type="number" id="BikeCount" name="BikeCount">
+            <label for="BusCount">Bus Count:</label>
+            <input type="number" id="BusCount" name="BusCount">
+            <label for="TruckCount">Truck Count:</label>
+            <input type="number" id="TruckCount" name="TruckCount">
+            <input type="submit" value="Predict">
+        </form>
+        <div class="result" id="result"></div>
+    </div>
+    <script>
+        document.querySelector('form').onsubmit = async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const response = await fetch('/predict', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+            if (result.error) {
+                document.getElementById('result').innerText = `Error: ${result.error}`;
+            } else {
+                document.getElementById('result').innerText = `Predicted Total Vehicles: ${result['Predicted Total']*12}`;
+            }
+        }
+    </script>
+</body>
+</html>
